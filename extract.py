@@ -151,23 +151,18 @@ def score(transcript, speaker_id):
 
 def get_difference_summary(summary):
     str_summary = json.dumps(summary)
-    prompting = f'''
-        I'm going to give you a json representing the emotions relevant to major key times in a speech.
-        I want you to act like a speech coach that analyzes the given data to concisely summarize the insights for 
-        the speaker. Each object in the json comes with the main emotion, the difference between how much of this emotion
-        we want you to show and how much it was shown, and the mode of communication (voice/face).
-        A positive number means the speaker should portray this emotion more through that mode whereas 
-        a negative means you should tone it down.
-
-        Here's your data formatted in JSON.
-        {str_summary}
-        
-        Can you give me a few sentences of feedback with your interpretations?
-
-    '''
-    response = openai.Completion.create(
-        model="gpt-3.5-turbo-instruct",
-        prompt=prompting
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "user", "content": '''I'm going to give you a json representing the emotions relevant to major key times in a speech.
+                I want you to act like a speech coach that analyzes the given data to concisely summarize the insights for 
+                the speaker. Each object in the json comes with the main emotion, the difference between how much of this emotion
+                we want you to show and how much it was shown, and the mode of communication (voice/face).
+                A positive number means the speaker should portray this emotion more through that mode whereas 
+                a negative means you should tone it down.'''},
+            {"role": "user", "content": f"Here's the JSON -- ${str_summary}"},
+            {"role": "user", "content": "Can you give me a few sentences of feedback with your interpretations?"}
+        ]
     )
 
     return response
