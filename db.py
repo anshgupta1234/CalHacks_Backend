@@ -13,7 +13,7 @@ conn = s2.connect(host=host, port=port, user=user, password=password, database='
 #add a speech/transcript keypoint to our database--this is called per keypoint per speech per speaker
 def add_vector(speaker_id, transcript_id, keypoint, emotion, vector):
     table = 'speakervectors'
-    ADD_VECTOR_SQL = f'''INSERT INTO speechvectorspace (speaker_id, transcript_id, keypoint, emotion, vector) VALUES ("{speaker_id}", "{transcript_id}", "{keypoint}", '{"emotion": emotion}', JSON_ARRAY_PACK("{vector}"));'''
+    ADD_VECTOR_SQL = f'''INSERT INTO speechvectorspace (speaker_id, transcript_id, keypoint, emotion, vector) VALUES ("{speaker_id}", "{transcript_id}", "{keypoint}", '{"emotion": ${emotion}}', JSON_ARRAY_PACK("{vector}"));'''
     with conn:
         with conn.cursor() as cur:
             cur.execute(ADD_VECTOR_SQL)
