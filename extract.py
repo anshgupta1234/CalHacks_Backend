@@ -1,5 +1,6 @@
 from langchain.document_loaders import TextLoader
-from langchain.llms import OpenAI
+from langchain.llms import OpenAI, ChatOpenAI
+import json
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import Chroma
@@ -147,6 +148,29 @@ def score(transcript, speaker_id):
                 'most_similar_model_data': hume_emotion_from_clip(clip_path(get_timestep_for_keypoint(transcript_id, most_similar_model_keypoint))),
                 'emotional_difference': difference(most_similar_model_keypoint, customer_emotion_at_keypoint)
             })
+
+def get_difference_summary(summary):
+    str_summary = json.dumps(summary)
+    prompting = f'''
+        I'm going to give you a json representing the emotions relevant to major key times in a speech.
+        I want you to act like a speech coach that analyzes the given data to concisely summarize the insights for 
+        the speaker. Each object in the json comes with the main emotion, the difference between how much of this emotion
+        we want you to show and how much it was shown, and the mode of communication (voice/face).
+        A positive number means the speaker should portray this emotion more through that mode whereas 
+        a negative means you should tone it down.
+
+        Here's your data formatted in JSON.
+        {str_summary}
+        
+        Can you give me a few sentences of feedback with your interpretations?
+
+    '''
+    response = openai.Completion.create(
+        model="gpt-3.5-turbo-instruct",
+        prompt=prompting
+    )
+
+    return response
 
 #print(openai.Embedding.create(input = ['work for them'], model="text-embedding-ada-002")['data'][0]['embedding'])
 '''

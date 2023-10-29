@@ -68,7 +68,8 @@ def process_video():
         'face_mistakes': face_mistakes,
         'voice_mistakes': voice_mistakes,
         'summary': summary,
-        'filename': video_file.filename
+        'filename': video_file.filename,
+        'response': get_difference_summary(summary)
     })
 
 if __name__ == '__main__':

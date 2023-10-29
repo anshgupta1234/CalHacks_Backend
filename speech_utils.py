@@ -56,4 +56,3 @@ def get_sentence_time_segment(sentence, speech_info):
             return (segment["start"], segment["end"])
 
     return (0, 0)
-
