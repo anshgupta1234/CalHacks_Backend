@@ -50,10 +50,34 @@ def post_process(job_data):
 
     return processed_data
 
-f = open('example.json')
- 
-# returns JSON object as 
-# a dictionary
-data = json.load(f)
+def compare(keypoint_data, keypoints, threshold):
 
-print(post_process(data))
+    face_data_comparisons = []
+    voice_data_comparisons = []
+
+    for keypoint in keypoints:
+        expected_face = keypoint_data[keypoint]["expected"]["face_data"]
+        expected_voice = keypoint_data[keypoint]["expected"]["voice_data"]
+
+        actual_face = keypoint_data[keypoint]["actual"]["face_data"]
+        actual_voice = keypoint_data[keypoint]["actual"]["voice_data"]
+
+        for emotion in expected_face.keys():
+            diff = expected_face[emotion] - actual_face[emotion]
+            if diff > threshold:
+                face_data_comparisons.append({ 
+                    "keypoint": keypoint,
+                    "emotion": emotion,
+                    "difference": diff 
+                })
+
+        for emotion in expected_voice.keys():
+            diff = expected_voice[emotion] - actual_voice[emotion]
+            if abs(diff) > threshold:
+                voice_data_comparisons.append({ 
+                    "keypoint": keypoint,
+                    "emotion": emotion,
+                    "difference": diff 
+                })
+
+    return face_data_comparisons, voice_data_comparisons

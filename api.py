@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from speech_utils import get_speech_info, get_sentence_time_segment
-from utils import get_clip
+from utils import get_clip, post_process, compare
 from flask_cors import CORS, cross_origin
 from hume_calls import get_emotion_data
 
@@ -47,9 +47,7 @@ def process_video():
 
     suggestions = []
     threshold = 0.3
-    for keypoint in learner_keypoints:
-        # Face Data
-        for
+    face_data_comparisons, voice_data_comparisons = compare(keypoint_data, keypoints, threshold)
     
     # Process the video file and speaker string (you can add your custom logic here)
     # For demonstration purposes, we'll just return the received data
