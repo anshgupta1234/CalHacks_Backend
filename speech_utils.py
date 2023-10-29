@@ -2,6 +2,7 @@ import whisper_timestamped as whisper
 from io import BytesIO
 import subprocess
 import numpy as np
+from difflib import SequenceMatcher
 
 def load_audio_from_video(video_file, sr=16000):
     """
@@ -51,7 +52,8 @@ def get_speech_info(video_path):
 
 def get_sentence_time_segment(sentence, speech_info):
     for segment in speech_info["segments"]:
-        if sentence in segment["text"]:
+        if SequenceMatcher(None, sentence, segment["text"]).ratio() > 0.6:
             return (segment["start"], segment["end"])
 
     return (0, 0)
+
