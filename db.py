@@ -16,12 +16,20 @@ conn = s2.connect(host=host, port=port, user=user, password=password, database='
 
 #add a vector embedding to our database
 #add a speech/transcript keypoint to our database--this is called per keypoint per speech per speaker
-def add_vector(speaker_id, transcript_id, text, vector):
+def add_vector(speaker_id, transcript_id, text, emotion, vector):
     table = 'speakervectors'
-    ADD_VECTOR_SQL = f'INSERT INTO speakervectors (speaker_id, transcript_id, text, vector) VALUES ("{speaker_id}", "{transcript_id}", "{text}", JSON_ARRAY_PACK("{vector}"));'
+    ADD_VECTOR_SQL = f'INSERT INTO speakervectors (speaker_id, transcript_id, text, emotion, vector) VALUES ("{speaker_id}", "{transcript_id}", "{text}", "{emotion}", JSON_ARRAY_PACK("{vector}"));'
     with conn:
         with conn.cursor() as cur:
             cur.execute(ADD_VECTOR_SQL)
+
+#given a speaker id and a model embedding, we'd like to return the emotional data
+#correlating with the model speaker's embedding
+def get(speaker_id, embedding):
+    GET_SQL = f''
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute(GET_SQL)
 
 #get the similar embeddings to the given vector embedding
 #we will be matching a given new set of keypoints with the existing keypoints
@@ -34,4 +42,4 @@ def search(embedding):
         with conn.cursor() as cur:
             cur.execute(SEARCH_SQL)
 
-            
+

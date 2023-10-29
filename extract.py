@@ -9,7 +9,7 @@ import openai
 import os
 import singlestoredb as s2
 import glob
-from db import add_vector, search
+from CalHacks_Backend.db import add_vector, search
 
 os.environ["OPENAI_API_KEY"] = "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"
 openai.api_key = "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"
@@ -71,10 +71,11 @@ def keypoints(filepath):
 #Let's run this method over all the media that we're given to develop a holistic view
 #aggregating the necessary keypoints for us to run similarity search and determine labels
 #returns a list of dictionary elements that contain an id with a list of keypoints for the file of filename of id
-def aggregate_keypoints(fileselector):
+def aggregate_keypoints(fileselector, speaker_id):
     ungrouped_kps = []
     for fpath in glob.glob(fileselector):
         kp_associated_data = {
+            'speaker_id': speaker_id,
             'transcript_id': fpath,
             'keypoints': keypoints(fpath)
         }
