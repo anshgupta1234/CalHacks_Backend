@@ -11,9 +11,12 @@ import singlestoredb as s2
 import glob
 from db import add_vector, search
 import json
+from dotenv import load_dotenv
 
-os.environ["OPENAI_API_KEY"] = "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"
-openai.api_key = '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'
+load_dotenv()
+
+os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
 #identify the key points in a transcript
 #We describe a key point as a major speech point that the speaker makes in an effort
@@ -26,8 +29,12 @@ def identify_keypoints(filepath):
 
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
     texts = text_splitter.split_documents(docs)
+    print("@identify_keypoints")
+    print("\n\n What are the texts? \n\n")
+    print(texts)
+    print("\n\n")
     embeddings = OpenAIEmbeddings()
-    docsearch = Chroma.from_documents(texts, embeddings, persist_directory="/tmp/chroma/")
+    docsearch = Chroma.from_documents(texts, embeddings)
 
     prompt_template = """Use the following pieces of context to answer the question at the end. 
     {context}
@@ -39,7 +46,7 @@ def identify_keypoints(filepath):
     )
     chain_type_kwargs = {"prompt": PROMPT}
 
-    qa = RetrievalQA.from_chain_type(llm=OpenAI(), chain_type="stuff", retriever=docsearch.as_retriever(), chain_type_kwargs=chain_type_kwargs)
+    qa = RetrievalQA.from_chain_type(llm=OpenAI(), chain_type="stuff", retriever=docsearch.as_retriever())
     #Add a confidence level field alongside each field you extract representing how confident you are in your result.
     query = '''
     You are given a speech's transcript here. Your goal here is to identify the key points in this speech. For the purposes of this task,
@@ -51,9 +58,12 @@ def identify_keypoints(filepath):
     3. All keypoints are meant to be unique and shouldn't overlap with other keypoints.
     4. It should be relevant and hold high significance to the argument.
 
-    Finally, represent your answers as a list of keypoints where the elements of the list are the exact pices of speech that you have identified as
-    a keypoint. Use the formatting: ["keypoint1", "keypoint2"].
-    Choose a maximum of 5 keypoints.
+    You MUST express your list where the elements are the keypoints with the opening and 
+    ending brace as such: ["keypoint1", "keypoint2", ...]
+
+    Choose at most 5 keypoints.
+    You MUST give an answer--even if it is an empty list. Do not say "I don't know", provide your
+    best guess.
     '''
     
     result = qa.run(query)
@@ -61,7 +71,11 @@ def identify_keypoints(filepath):
 
 def keypoints(filepath):
     result = identify_keypoints(filepath)
+    if result == "I don't know.":
+        return []
     #convert the text output into a list
+    #print("Result of chat is: ", result)
+
     begin = result.index("[")
     end = result.index("]")
     list_string = result[begin: end + 1]

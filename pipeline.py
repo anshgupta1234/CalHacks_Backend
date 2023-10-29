@@ -2,6 +2,7 @@ from extract import *
 from speech_utils import *
 from utils import *
 from hume_calls import *
+import json
 
 #generate text transcripts for all uploaded videos
 def read_transcript(path):
@@ -47,8 +48,7 @@ def update_db(data):
 def predict(user_recording_filepath, transcript_filepath, model_speaker_id):
     #find new keypoints in this transcript
     #essentially the same steps as those for the speaker so
-    user_transcript = read_transcript(transcript_filepath)
-    user_keypoints = aggregate_keypoints("./transcript.txt", model_speaker_id)
+    user_keypoints = aggregate_keypoints(transcript_filepath, model_speaker_id)
     print(user_keypoints)
     speech_info = get_speech_info(user_recording_filepath)
     print(speech_info)
@@ -63,12 +63,10 @@ def predict(user_recording_filepath, transcript_filepath, model_speaker_id):
                 job = get_emotion_data(clip_path)
                 job.await_complete()
                 user_emotion = job.get_predictions()
-                processed_emotion_info = post_process(user_emotion)
-                user_embd = get_embedding(keypoint)
-                add_vector(model_speaker_id, transcript_filepath, keypoint, processed_emotion_info, user_embd)
-
-        #let's now do similarity search for similar keypoints in our database of the model speakers kps
-        model_closest_embedding = search(user_embd)
+                if user_emotion != None:
+                    processed_emotion_info = json.dumps(post_process(user_emotion))
+                    user_embd = str(get_embedding(keypoint))
+                    add_vector(model_speaker_id, transcript_filepath, keypoint, processed_emotion_info, user_embd)
         
-print(predict("test_video.mp4", "transcript.txt", "Joebama"))
+print(predict("video2.mp4", "testing.txt", "Joebama"))
 

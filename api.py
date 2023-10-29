@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
-from speech_utils import get_speech_info, get_sentence_time_segment
-from utils import get_clip, post_process, compare
+from speech_utils import *
+from utils import *
+from extract import *
 from flask_cors import CORS, cross_origin
 from hume_calls import get_emotion_data
 
@@ -27,34 +28,48 @@ def process_video():
         return jsonify({'error': 'Invalid file format. Allowed formats: .mp4, .mov'}), 400
 
     speech_info = get_speech_info(filename)
+
     transcript = speech_info["text"]
+    text_file = open("./temp/transcript_api.txt", "w+")
+    text_file.write(transcript)
+    text_file.close()
+
     keypoint_data = {}
-    learner_keypoints = get_keypoints(transcript)
+    learner_keypoints = keypoints("./temp/transcript_api.txt")
     for keypoint in learner_keypoints:
+        # get model kp data
         keypoint_data[keypoint] = {}
-        expected_speaker_emotions = expected_emotions_at_keypoint(keypoint, speaker)
-        keypoint_data[keypoint]["expected"] = expected_speaker_emotions
+        # get user kp data
         time_info = get_sentence_time_segment(keypoint, speech_info)
-        clip_path = get_clip("yo.mov", time_info)
-        job = get_emotion_data(clip_path)
-        keypoint_data[keypoint]["job"] = job
+        if sum(time_info) > 0:
+            clip_path = get_clip(filename, time_info)
+            embd = str(get_embedding(keypoint))
+            model_kp_details = search(embd)
+            keypoint_data[keypoint]["expected"] = model_kp_details["emotion"]
+            job = get_emotion_data(clip_path)
+            keypoint_data[keypoint]["job"] = job
+        else:
+            keypoint_data[keypoint]["job"] = None
 
     for keypoint in learner_keypoints:
-        keypoint_data[keypoint]["job"].await_complete()
-        raw_job_data = keypoint_data[keypoint]["job"].get_predictions()
-        avg_data = post_process(raw_job_data)
-        keypoint_data[keypoint]["actual"] = avg_data
+        if keypoint_data[keypoint]["job"] != None:
+            keypoint_data[keypoint]["job"].await_complete()
+            raw_job_data = keypoint_data[keypoint]["job"].get_predictions()
+            avg_data = post_process(raw_job_data)
+            keypoint_data[keypoint]["actual"] = avg_data
 
     suggestions = []
-    threshold = 0.3
-    face_data_comparisons, voice_data_comparisons = compare(keypoint_data, keypoints, threshold)
+    threshold = 0.2
+    face_mistakes, voice_mistakes, summary = compare(keypoint_data, learner_keypoints, threshold)
     
     # Process the video file and speaker string (you can add your custom logic here)
     # For demonstration purposes, we'll just return the received data
     return jsonify({
-        'speech_info': speech_info,
+        'face_mistakes': face_mistakes,
+        'voice_mistakes': voice_mistakes,
+        'summary': summary,
         'filename': video_file.filename
     })
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5003)
+    app.run(debug=True, port=5005)

@@ -52,7 +52,7 @@ def get_speech_info(video_path):
 
 def get_sentence_time_segment(sentence, speech_info):
     for segment in speech_info["segments"]:
-        if SequenceMatcher(None, sentence, segment["text"]).ratio() > 0.6:
+        if SequenceMatcher(None, sentence, segment["text"]).ratio() > 0.45:
             return (segment["start"], segment["end"])
 
     return (0, 0)
