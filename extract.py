@@ -1,5 +1,5 @@
 from langchain.document_loaders import TextLoader
-from langchain.llms import OpenAI, ChatOpenAI
+from langchain.llms import OpenAI
 import json
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
@@ -154,7 +154,7 @@ def get_difference_summary(summary):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "user", "content": '''I'm going to give you a json representing the emotions relevant to major key times in a speech.
+            {"role": "user", "content": f'''I'm going to give you a json representing the emotions relevant to major key times in a speech.
                 I want you to act like a speech coach that analyzes the given data to concisely summarize the insights for 
                 the speaker. Each object in the json comes with the main emotion, the difference between how much of this emotion
                 we want you to show and how much it was shown, and the mode of communication (voice/face).
@@ -165,8 +165,38 @@ def get_difference_summary(summary):
         ]
     )
 
-    return response
+    return response["choices"][0]["message"]["content"]
 
+jsony = '''"summary": {
+        "In these tough times, we need to gather together and really, really like help each other.": [
+            {
+                "difference": 0.27074927455270126,
+                "emotion": "Sadness",
+                "type": "face"
+            },
+            {
+                "difference": 0.3909689262509346,
+                "emotion": "Calmness",
+                "type": "voice"
+            },
+            {
+                "difference": 0.41626258194446564,
+                "emotion": "Concentration",
+                "type": "voice"
+            },
+            {
+                "difference": 0.3203507959842682,
+                "emotion": "Determination",
+                "type": "voice"
+            },
+            {
+                "difference": -0.2709709294140339,
+                "emotion": "Joy",
+                "type": "voice"
+            }
+        ]
+    }'''
+print(get_difference_summary(jsony))
 #print(openai.Embedding.create(input = ['work for them'], model="text-embedding-ada-002")['data'][0]['embedding'])
 '''
 print('\n\nParent\n\n')
