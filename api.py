@@ -40,7 +40,7 @@ def process_video():
         keypoint_data[keypoint]["job"] = job
 
     for keypoint in learner_keypoints:
-        keypoint_data[keypoint]["job"].await_response()
+        keypoint_data[keypoint]["job"].await_complete()
         raw_job_data = keypoint_data[keypoint]["job"].get_predictions()
         avg_data = post_process(raw_job_data)
         keypoint_data[keypoint]["actual"] = avg_data

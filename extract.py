@@ -10,9 +10,10 @@ import os
 import singlestoredb as s2
 import glob
 from db import add_vector, search
+import json
 
-os.environ["OPENAI_API_KEY"] = ""
-openai.api_key = ''
+os.environ["OPENAI_API_KEY"] = "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"
+openai.api_key = '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'
 
 #identify the key points in a transcript
 #We describe a key point as a major speech point that the speaker makes in an effort
@@ -63,8 +64,9 @@ def keypoints(filepath):
     #convert the text output into a list
     begin = result.index("[")
     end = result.index("]")
-    list_string = result[begin + 1 : end]
-    list = list_string.split(",")
+    list_string = result[begin: end + 1]
+    print(list_string)
+    list = json.loads(list_string)
     return list
 
 #now that we have our keypoints, we address the entire labeling problem--primary system
@@ -133,11 +135,6 @@ def score(transcript, speaker_id):
             })
 
 #print(openai.Embedding.create(input = ['work for them'], model="text-embedding-ada-002")['data'][0]['embedding'])
-
-print('Lincoln\n')
-embedding = get_embedding('Lincoln')
-print(len(embedding))
-print(embedding)
 '''
 print('\n\nParent\n\n')
 print(get_embedding('parent'))
