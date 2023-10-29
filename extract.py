@@ -9,10 +9,10 @@ import openai
 import os
 import singlestoredb as s2
 import glob
-from CalHacks_Backend.db import add_vector, search
+from db import add_vector, search
 
-os.environ["OPENAI_API_KEY"] = "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"
-openai.api_key = "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"
+os.environ["OPENAI_API_KEY"] = ""
+openai.api_key = ''
 
 #identify the key points in a transcript
 #We describe a key point as a major speech point that the speaker makes in an effort
@@ -89,7 +89,7 @@ def aggregate_keypoints(fileselector, speaker_id):
 #speakers = aggregate_keypoints('./transcripts/*.txt')
 
 def get_embedding(text):
-    return openai.Embedding.create(input = [text], model="text-embedding-ada-002")['data'][0]['embedding']
+    return openai.Embedding.create(input = text, model="text-embedding-ada-002")['data'][0]['embedding']
 
 def group_keypoints(spkr_id, trscpt_id, speakers):
     for speaker in speakers:
@@ -131,12 +131,15 @@ def score(transcript, speaker_id):
                 'most_similar_model_data': hume_emotion_from_clip(clip_path(get_timestep_for_keypoint(transcript_id, most_similar_model_keypoint))),
                 'emotional_difference': difference(most_similar_model_keypoint, customer_emotion_at_keypoint)
             })
-    }
 
+#print(openai.Embedding.create(input = ['work for them'], model="text-embedding-ada-002")['data'][0]['embedding'])
 
-print('Monkey\n')
-print(get_embedding('monkey'))
-'''print('\n\nParent\n\n')
+print('Lincoln\n')
+embedding = get_embedding('Lincoln')
+print(len(embedding))
+print(embedding)
+'''
+print('\n\nParent\n\n')
 print(get_embedding('parent'))
 print('\n\nChildren\n\n')
 print(get_embedding('children'))

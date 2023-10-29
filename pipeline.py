@@ -64,6 +64,7 @@ def predict(user_recording_filepath, model_speaker_id):
         keypoint['vector_embedding'] = user_embd
 
         #let's now do similarity search for similar keypoints in our database of the model speakers kps
-        search(user_embd)
+        model_closest_embedding = search(user_embd)
+        
 
 
